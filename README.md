@@ -25,3 +25,10 @@ TODO: Write development instructions here
 ## Contributors
 
 - [Seth Stadick](https://github.com/sethrad) - creator and maintainer
+
+## TODOs
+
+- Clean up docs so that they link to each-other
+- Add high level docs to readme
+- Figure out how to publish as a shard
+- Make sure code examples work / check other ways of doing that?
