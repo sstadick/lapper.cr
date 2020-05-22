@@ -35,7 +35,7 @@ module Lapper
     # Compute the intersect between two intervals
     def intersect(other : self) : Int32
       intersect = Math.min(@stop, other.stop) - Math.max(@start, other.start)
-      intersec5 < 0 ? 0 : intersect
+      intersect < 0 ? 0 : intersect
     end
 
     # Compute wheter self overlaps a range
@@ -71,6 +71,7 @@ module Lapper
           stop
         end
       end
+      stop
     end
   end
 
