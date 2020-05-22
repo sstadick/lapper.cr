@@ -18,7 +18,45 @@
 # Query: (8, 11]
 # Answer: ((0,10], (5,9], (8,11])
 # ```
-# TODO: Add code example
+#
+# Most interaction with this shard will be through the `Lapper::Lapper` class.
+# The main methods are `Lapper::Lapper.find` and `Lapper::Lapper.seek`.
+#
+# The overlap function for this assumes a zero based genomic coordinate system. So
+# [start, stop) is not inclusive of the stop position for neither queries nor the
+# `Lapper::Intervals`.
+#
+# Lapper does not use an interval tree, instead, it operates on the assumtion that most intervals are
+# of similar length; or, more exactly, that the longest interval in the set is not long compred to
+# the average distance between intervals.
+#
+# For cases where this holds true (as it often does with genomic data), we can sort by start and
+# use binary search on the starts, accounting for the length of the longest interval. The advantage
+# of this approach is simplicity of implementation and speed. In realistic tests queries returning
+# the overlapping intervals are 1000 times faster than brute force and queries that merely check
+# for the overlaps are > 5000 times faster.
+#
+# # Examples
+# ```
+# require "Lapper"
+#
+# # Create some fake data
+# data = (0..100).step(by: 20).map { |x| Interval(Int32).new(x, x + 10, 0) }.to_a
+#
+# # Create the lapper
+# lapper = Lapper(Int32).new(data)
+#
+# # Demo `find`
+# lapper = Lapper(Int32).new(data)
+# lapper.find(5, 11).size == 2
+#
+# # Demo `seek` - calculate overlap between queries and the found intervals
+# sum = 0
+# cursor = 0
+# (0..10).step(by: 3).each do |i|
+#   sum += lapper.seek(i, i + 2, pointerof(cursor)).map { |iv| Math.min(i + 2, iv.stop) - Math.max(i, iv.start) }.sum
+# end
+# ```
 module Lapper
   VERSION = "0.1.0"
 
