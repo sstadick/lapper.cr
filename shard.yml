@@ -1,0 +1,13 @@
+name: lapper
+version: 0.1.0
+
+authors:
+  - Seth Stadick <sstadick@gmail.com>
+
+targets:
+  lapper:
+    main: src/lapper.cr
+
+crystal: 0.34.0
+
+license: MIT
