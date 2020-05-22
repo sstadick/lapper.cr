@@ -22,6 +22,7 @@
 module Lapper
   VERSION = "0.1.0"
 
+  # Represent an interval that can hold a *val* of any type
   struct Interval(T)
     include Comparable(Interval(T))
 
@@ -29,16 +30,28 @@ module Lapper
     getter stop
     getter val
 
+    # Creates an `Interval`
+    # ```
+    # iv = Interval(String).new(5, 10, "chr1")
+    # ```
     def initialize(@start : Int32, @stop : Int32, @val : T)
     end
 
     # Compute the intersect between two intervals
+    # ```
+    # iv = Interval(Int32).new(0, 5, 0)
+    # iv.intersect(Interval(Int32).new(4, 6, 0)) # => 1
+    # ```
     def intersect(other : self) : Int32
       intersect = Math.min(@stop, other.stop) - Math.max(@start, other.start)
       intersect < 0 ? 0 : intersect
     end
 
     # Compute wheter self overlaps a range
+    # ```
+    # iv = Interval(Int32).new(0, 5, 0)
+    # iv.overlap(4, 6) # => true
+    # ```
     def overlap(start : Int32, stop : Int32) : Bool
       @start < stop && @stop > start
     end
@@ -55,12 +68,15 @@ module Lapper
     end
   end
 
-  struct IterFind(T)
+  # Helper struct to enable returning a iterator for a query, see `Lapper::find` or `Lapper::seek`
+  private struct IterFind(T)
     include Iterator(Interval(T))
 
+    # Create an `IterFind` instance
     def initialize(@inner : Lapper(T), @off : Int32, @last : Int32, @stop : Int32, @start : Int32)
     end
 
+    # Implement `next` for `Iterator(Interval(T))`
     def next
       while @off < @last
         interval = @inner.intervals[@off]
@@ -75,6 +91,11 @@ module Lapper
     end
   end
 
+  # Lapper is the primary data structure that contains the sorted Array of `Interval(T)`
+  # ```
+  # data = (0..100).step(by: 20).map { |x| Interval(Int32).new(x, x + 10, 0) }.to_a
+  # lapper = Lapper(Int32).new(data)
+  # ```
   class Lapper(T)
     getter intervals : Array(Interval(T))
 
@@ -90,7 +111,7 @@ module Lapper
     end
 
     # Determine the first index that we should start checkinf for overlaps for via binary search
-    def lower_bound(start : Int32, intervals : Array(Interval(T))) : Int32
+    protected def lower_bound(start : Int32, intervals : Array(Interval(T))) : Int32
       size = intervals.size
       low = 0
       while size > 0
@@ -106,6 +127,11 @@ module Lapper
     end
 
     # Find all intervals that overlap start .. stop
+    # ```
+    # data = (0..100).step(by: 5).map { |x| Interval(Int32).new(x, x + 2, 0) }.to_a
+    # lapper = Lapper(Int32).new(data)
+    # lapper.find(5, 11).size == 2
+    # ```
     def find(start : Int32, stop : Int32)
       IterFind(T).new(
         inner: self,
@@ -116,9 +142,19 @@ module Lapper
       )
     end
 
-    # Find all intervals that overlap start .. stop when queries are in sorted order.
-    # TODO: use a pointer or a class for cursor?
-    # TODO: Verify that the cursor is incrementing as expected in IterFind
+    # Find all intervals that overlap start .. stop when queries are in sorted (by start) order.
+    # It uses a linear search from the last query instead of a binary search. A reference to a
+    # cursor must be passed in. This reference will be modified and should be reused in the next
+    # query. This allows seek to not need to make mutate the lapper itself and be useable across
+    # threads.
+    # ```
+    # data = (0..100).step(by: 5).map { |x| Interval(Int32).new(x, x + 2, 0) }.to_a
+    # lapper = Lapper(Int32).new(data)
+    # cursor = 0
+    # lapper.intervals.each do |i|
+    #   lapper.seek(i.start, i.stop, pointerof(cursor)).size == 1
+    # end
+    # ```
     def seek(start : Int32, stop : Int32, cursor : Int32*)
       if cursor.value == 0 || (cursor.value < @intervals.size && @intervals[cursor.value].start > start)
         cursor.value = lower_bound(start - @max_len, @intervals)
@@ -135,6 +171,4 @@ module Lapper
       )
     end
   end
-
-  # TODO: Put your code here
 end
