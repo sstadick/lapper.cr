@@ -1,6 +1,6 @@
 [![GitHub release](https://img.shields.io/github/release/sstadick/crystal-lapper.svg)](https://github.com/sstadick/lapper.cr/releases)
 [![Build Status](https://travis-ci.org/sstadick/crystal-lapper.svg?branch=master)](https://travis-ci.org/sstadick/lapper.cr)
-[![License](https://github.com/sstadick/lapper.cr/blob/master/LICENSE)](https://img.shields.io/github/license/sstadick/lapper.cr.svg)
+ [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # lapper.cr
 
@@ -8,8 +8,7 @@ This is a Crystal port of Brent Pendersen's [nim-lapper](https://github.com/bren
 
 ## Documentation
 
-TODO place link here
-See [here]()
+See [here](https://sstadick.github.io/lapper.cr/)
 
 ## Installation
 
@@ -23,8 +22,26 @@ dependencies:
 
 ## Usage
 
-```
+```crystal
 require "lapper"
+
+# Create some fake data
+data = (0..100).step(by: 20).map { |x| Lapper::Interval(Int32).new(x, x + 10, 0) }.to_a
+
+# Create the lapper
+lapper = Lapper::Lapper(Int32).new(data)
+
+# Demo `find`
+lapper = Lapper::Lapper(Int32).new(data)
+lapper.find(5, 11).size == 2
+
+# Demo `seek` - calculate overlap between queries and the found intervals
+sum = 0
+cursor = 0
+(0..10).step(by: 3).each do |i|
+  sum += lapper.seek(i, i + 2, pointerof(cursor)).map { |iv| Math.min(i + 2, iv.stop) - Math.max(i, iv.start) }.sum
+end
+puts sum
 ```
 
 ## Contributing
