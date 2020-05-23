@@ -46,6 +46,16 @@ end
 puts sum
 ```
 
+## Performance
+
+Has not yet been benchmarked for the Crystal implementation. For other languages this library outperforms [all implementations](https://github.com/sstadick/rust-lapper#benchmarks) when the intervals are not heavily nested. For another Crystal implementation of an interval lib, see [klib.cr](https://github.com/lh3/biofast/blob/master/lib/klib.cr), which is based on the [cgranges](https://github.com/lh3/cgranges) lib by the same author.
+
+TODO:
+
+- Benchmark the `seek` and `find` methods against eachother
+- Benchmark against naive case like `nim-lapper`
+- Benchmakr against klib
+
 ## Contributing
 
 1. Fork it (<https://github.com/sstadick/lapper.cr/fork>)
