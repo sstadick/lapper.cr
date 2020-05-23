@@ -1,6 +1,8 @@
 [![GitHub release](https://img.shields.io/github/release/sstadick/crystal-lapper.svg)](https://github.com/sstadick/lapper.cr/releases)
 [![Build Status](https://travis-ci.org/sstadick/crystal-lapper.svg?branch=master)](https://travis-ci.org/sstadick/lapper.cr)
- [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub license](https://img.shields.io/github/license/sstadick/lapper.cr.svg)](https://github.com/sstadick/lapper.cr/blob/master/LICENSE)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/sstadick/lapper.cr/graphs/commit-activity)
+[![Docs](https://img.shields.io/badge/Documentation-yes-green.svg)](https://sstadick.github.io/lapper.cr/)
 
 # lapper.cr
 
