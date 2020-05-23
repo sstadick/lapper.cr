@@ -40,6 +40,7 @@ describe Lapper do
       lapper = setup_nonoverlapping
       cursor = 0
       lapper.find(15, 20).next.should be_a(Iterator::Stop)
+      lapper.find_fast(15, 20)[0]?.should eq(nil)
       lapper.seek(15, 20, pointerof(cursor)).next.should be_a(Iterator::Stop)
     end
 
@@ -47,6 +48,7 @@ describe Lapper do
       lapper = setup_nonoverlapping
       cursor = 0
       lapper.find(30, 35).next.should be_a(Iterator::Stop)
+      lapper.find_fast(30, 35)[0]?.should eq(nil)
       lapper.seek(30, 35, pointerof(cursor)).next.should be_a(Iterator::Stop)
     end
 
@@ -55,6 +57,7 @@ describe Lapper do
       cursor = 0
       expected = Iv.new(20, 30, 0)
       lapper.find(15, 25).next.should eq(expected)
+      lapper.find_fast(15, 25)[0]?.should eq(expected)
       lapper.seek(15, 25, pointerof(cursor)).next.should eq(expected)
     end
 
@@ -63,6 +66,7 @@ describe Lapper do
       cursor = 0
       expected = Iv.new(20, 30, 0)
       lapper.find(25, 35).next.should eq(expected)
+      lapper.find_fast(25, 35)[0]?.should eq(expected)
       lapper.seek(25, 35, pointerof(cursor)).next.should eq(expected)
     end
 
@@ -71,6 +75,8 @@ describe Lapper do
       cursor = 0
       expected = Iv.new(20, 30, 0)
       lapper.find(22, 27).next.should eq expected
+      lapper.find_fast(22, 27)[0]?.should eq expected
+)
       lapper.seek(22, 27, pointerof(cursor)).next.should eq expected
     end
 
@@ -79,6 +85,7 @@ describe Lapper do
       cursor = 0
       expected = Iv.new(20, 30, 0)
       lapper.find(15, 35).next.should eq expected
+      lapper.find_fast(15, 35)[0]?.should eq expected
       lapper.seek(15, 35, pointerof(cursor)).next.should eq expected
     end
 
@@ -87,6 +94,7 @@ describe Lapper do
       cursor = 0
       expected = [Iv.new(0, 15, 0), Iv.new(10, 25, 0)]
       lapper.find(8, 20).to_a.should eq expected
+      lapper.find_fast(8, 20).should eq expected
       lapper.seek(8, 20, pointerof(cursor)).to_a.should eq expected
     end
 

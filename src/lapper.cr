@@ -164,6 +164,35 @@ module Lapper
       low
     end
 
+    def find_fast(start : Int32, stop : Int32)
+      off = lower_bound(start - @max_len, @intervals)
+      result = [] of Interval(T)
+      while off < @intervals.size
+        interval = @intervals[off]
+        off += 1
+        if interval.overlap(start, stop)
+          result << interval
+        elsif interval.start >= stop
+          break
+        end
+      end
+      result
+    end
+
+    def find_faster(start : Int32, stop : Int32, array : Array(Interval(T)))
+      array.clear
+      off = lower_bound(start - @max_len, @intervals)
+      while off < @intervals.size
+        interval = @intervals[off]
+        off += 1
+        if interval.overlap(start, stop)
+          array << interval
+        elsif interval.start >= stop
+          break
+        end
+      end
+    end
+
     # Find all intervals that overlap start .. stop
     # ```
     # data = (0..100).step(by: 5).map { |x| Interval(Int32).new(x, x + 2, 0) }.to_a
