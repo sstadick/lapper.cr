@@ -54,7 +54,7 @@ TODO:
 
 - Benchmark the `seek` and `find` methods against eachother
 - Benchmark against naive case like `nim-lapper`
-- Benchmakr against klib
+- Benchmark against klib
 
 ## Contributing
 
