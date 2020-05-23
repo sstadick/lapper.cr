@@ -19,12 +19,12 @@
 # Answer: ((0,10], (5,9], (8,11])
 # ```
 #
-# Most interaction with this shard will be through the `Lapper#Lapper` class.
-# The main methods are `Lapper#Lapper#find` and `Lapper#Lapper#seek`.
+# Most interaction with this shard will be through the `Lapper` class.
+# The main methods are `Lapper#find` and `Lapper#seek`.
 #
 # The overlap function for this assumes a zero based genomic coordinate system. So
 # [start, stop) is not inclusive of the stop position for neither queries nor the
-# `Lapper#Intervals`.
+# `Intervals`.
 #
 # Lapper does not use an interval tree, instead, it operates on the assumtion that most intervals are
 # of similar length; or, more exactly, that the longest interval in the set is not long compred to
@@ -38,16 +38,16 @@
 #
 # # Examples
 # ```
-# require "Lapper"
+# require "lapper"
 #
 # # Create some fake data
-# data = (0..100).step(by: 20).map { |x| Interval(Int32).new(x, x + 10, 0) }.to_a
+# data = (0..100).step(by: 20).map { |x| Lapper::Interval(Int32).new(x, x + 10, 0) }.to_a
 #
 # # Create the lapper
-# lapper = Lapper(Int32).new(data)
+# lapper = Lapper::Lapper(Int32).new(data)
 #
 # # Demo `find`
-# lapper = Lapper(Int32).new(data)
+# lapper = Lapper::Lapper(Int32).new(data)
 # lapper.find(5, 11).size == 2
 #
 # # Demo `seek` - calculate overlap between queries and the found intervals
@@ -58,7 +58,7 @@
 # end
 # ```
 module Lapper
-  VERSION = "0.1.0"
+  VERSION = "1.0.0"
 
   # Represent an interval that can hold a *val* of any type
   struct Interval(T)
@@ -106,7 +106,7 @@ module Lapper
     end
   end
 
-  # Helper struct to enable returning a iterator for a query, see `Lapper#find` or `Lapper#seek`
+  # Helper struct to enable returning a iterator for a query, see `#find` or `#seek`
   private struct IterFind(T)
     include Iterator(Interval(T))
 

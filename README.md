@@ -48,7 +48,7 @@ puts sum
 
 ## Contributing
 
-1. Fork it (<https://github.com/sethrad/lapper/fork>)
+1. Fork it (<https://github.com/sstadick/lapper.cr/fork>)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
@@ -56,11 +56,4 @@ puts sum
 
 ## Contributors
 
-- [Seth Stadick](https://github.com/sethrad) - creator and maintainer
-
-## TODOs
-
-- Clean up docs so that they link to each-other
-- Add high level docs to readme
-- Figure out how to publish as a shard
-- Make sure code examples work / check other ways of doing that?
+- [Seth Stadick](https://github.com/sstadick) - creator and maintainer
