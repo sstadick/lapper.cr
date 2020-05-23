@@ -8,6 +8,9 @@ targets:
   lapper:
     main: src/lapper.cr
 
+description: |
+  A fast genomic intervals library for bioinformatics.
+
 crystal: 0.34.0
 
 license: MIT
