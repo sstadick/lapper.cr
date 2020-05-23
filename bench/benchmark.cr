@@ -49,49 +49,5 @@ Benchmark.ips do |x|
       end
     end
   }
-  x.report("find_fast") {
-    lines.each do |line|
-      t = line.split
-      if lappers.has_key?(t[0])
-        st0, en0 = t[1].to_i, t[2].to_i
-        cov_st, cov_en, cov, n = 0, 0, 0, 0
-        lappers[t[0]].find_fast(st0, en0).each do |iv|
-          n += 1
-          st1 = iv.start > st0 ? iv.start : st0
-          en1 = iv.stop < en0 ? iv.stop : en0
-          if st1 > cov_en
-            cov += cov_en - cov_st
-            cov_st, cov_en = st1, en1
-          else
-            cov_en = en1 if cov_en < en1
-          end
-        end
-        cov += cov_en - cov_st
-      end
-    end
-  }
-  x.report("find_faster") {
-    array = [] of Interval(Bool)
-    lines.each do |line|
-      t = line.split
-      if lappers.has_key?(t[0])
-        st0, en0 = t[1].to_i, t[2].to_i
-        cov_st, cov_en, cov, n = 0, 0, 0, 0
-        lappers[t[0]].find_faster(st0, en0, array)
-        array.each do |iv|
-          n += 1
-          st1 = iv.start > st0 ? iv.start : st0
-          en1 = iv.stop < en0 ? iv.stop : en0
-          if st1 > cov_en
-            cov += cov_en - cov_st
-            cov_st, cov_en = st1, en1
-          else
-            cov_en = en1 if cov_en < en1
-          end
-        end
-        cov += cov_en - cov_st
-      end
-    end
-  }
   # x.report("seek") { ... }
 end
