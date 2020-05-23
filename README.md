@@ -1,21 +1,31 @@
-[![GitHub release](https://img.shields.io/github/release/sstadick/crystal-lapper.svg)](https://github.com/sstadick/crystal-lapper/releases)
-[![Build Status](https://travis-ci.org/sstadick/crystal-lapper.svg?branch=master)](https://travis-ci.org/sstadick/crystal-lapper)
+[![GitHub release](https://img.shields.io/github/release/sstadick/crystal-lapper.svg)](https://github.com/sstadick/lapper.cr/releases)
+[![Build Status](https://travis-ci.org/sstadick/crystal-lapper.svg?branch=master)](https://travis-ci.org/sstadick/lapper.cr)
+[![License](https://github.com/sstadick/lapper.cr/blob/master/LICENSE)](https://img.shields.io/github/license/sstadick/lapper.cr.svg)
 
-# Lapper
+# lapper.cr
 
 This is a Crystal port of Brent Pendersen's [nim-lapper](https://github.com/brentp/nim-lapper). This crate works well for most genomic interval data. It does have a notable worst case scenario when very long regions engulf large percentages of the other intervals. As usual, you should benchmark on your expected data and see how it works.
 
+## Documentation
+
+TODO place link here
+See [here]()
+
 ## Installation
 
-TODO: Write installation instructions here
+1. Add the dependency to your `shard.yml`
+
+```yml
+dependencies:
+  lapper:
+    github: sstadick/lapper.cr
+```
 
 ## Usage
 
-TODO: Write usage instructions here
-
-## Development
-
-TODO: Write development instructions here
+```
+require "lapper"
+```
 
 ## Contributing
 
