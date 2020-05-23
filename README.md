@@ -56,6 +56,8 @@ TODO:
 - Benchmark against naive case like `nim-lapper`
 - Benchmark against klib
 
+The `bench\bench.cr` script is expecting the [this](https://github.com/lh3/biofast/releases/download/biofast-data-v1/biofast-data-v1.tar.gz) data to be in the top top level dir of the repo and untarred. 
+
 ## Contributing
 
 1. Fork it (<https://github.com/sstadick/lapper.cr/fork>)

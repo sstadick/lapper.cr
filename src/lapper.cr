@@ -58,7 +58,7 @@
 # end
 # ```
 module Lapper
-  VERSION = "1.0.0"
+  VERSION = "1.1.0"
 
   # Represent an interval that can hold a *val* of any type
   struct Interval(T)
@@ -106,29 +106,6 @@ module Lapper
     end
   end
 
-  # Helper struct to enable returning a iterator for a query, see `#find` or `#seek`
-  private struct IterFind(T)
-    include Iterator(Interval(T))
-
-    # Create an `IterFind` instance
-    def initialize(@inner : Lapper(T), @off : Int32, @last : Int32, @stop : Int32, @start : Int32)
-    end
-
-    # Implement `next` for `Iterator(Interval(T))`
-    def next
-      while @off < @last
-        interval = @inner.intervals[@off]
-        @off += 1
-        if interval.overlap(@start, @stop)
-          return interval
-        elsif interval.start >= @stop
-          stop
-        end
-      end
-      stop
-    end
-  end
-
   # Lapper is the primary data structure that contains the sorted Array of `Interval(T)`
   # ```
   # data = (0..100).step(by: 20).map { |x| Interval(Int32).new(x, x + 10, 0) }.to_a
@@ -171,13 +148,18 @@ module Lapper
     # lapper.find(5, 11).size == 2
     # ```
     def find(start : Int32, stop : Int32)
-      IterFind(T).new(
-        inner: self,
-        off: lower_bound(start - @max_len, @intervals),
-        last: @intervals.size,
-        start: start,
-        stop: stop
-      )
+      result = [] of Interval(T)
+      off = lower_bound(start - @max_len, @intervals)
+      while off < @intervals.size
+        interval = @intervals[off]
+        off += 1
+        if interval.overlap(start, stop)
+          result << interval
+        elsif interval.start >= stop
+          break
+        end
+      end
+      result
     end
 
     # Find all intervals that overlap start .. stop when queries are in sorted (by start) order.
@@ -200,13 +182,17 @@ module Lapper
       while cursor.value + 1 < @intervals.size && @intervals[cursor.value + 1].start < start - @max_len
         cursor.value += 1
       end
-      IterFind.new(
-        inner: self,
-        off: cursor.value,
-        last: @intervals.size,
-        start: start,
-        stop: stop
-      )
+      result = [] of Interval(T)
+      while cursor.value < @intervals.size
+        interval = @intervals[cursor.value]
+        cursor.value += 1
+        if interval.overlap(start, stop)
+          result << interval
+        elsif interval.start >= stop
+          break
+        end
+      end
+      result
     end
   end
 end
