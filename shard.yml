@@ -1,12 +1,8 @@
 name: lapper
-version: 0.1.0
+version: 1.2.0
 
 authors:
   - Seth Stadick <sstadick@gmail.com>
-
-targets:
-  lapper:
-    main: src/lapper.cr
 
 description: |
   A fast genomic intervals library for bioinformatics.

@@ -34,65 +34,101 @@ def setup_single : Lp
   Lp.new(data)
 end
 
+def test_all(lapper : Lp, query : Tuple(Int32, Int32), expected : Array(Iv))
+  # array return
+  lapper.find(*query).should eq(expected)
+  lapper.seek(*query).should eq(expected)
+
+  # block
+  result = [] of Iv
+  lapper.find(*query) { |iv| result << iv }
+  result.should eq(expected)
+  result.clear
+  lapper.seek(*query) { |iv| result << iv }
+  result.should eq(expected)
+
+  # reused array
+  ivs = [] of Iv
+  lapper.find(*query, ivs)
+  ivs.should eq(expected)
+  lapper.seek(*query, ivs)
+  ivs.should eq(expected)
+end
+
+def test_all(lapper : Lp, query : Tuple(Int32, Int32), expected : Iv)
+  # array return
+  lapper.find(*query)[0]?.should eq(expected)
+  lapper.seek(*query)[0]?.should eq(expected)
+
+  # block
+  result = [] of Iv
+  lapper.find(*query) { |iv| result << iv }
+  result[0]?.should eq(expected)
+  result.clear
+  lapper.seek(*query) { |iv| result << iv }
+  result[0]?.should eq(expected)
+
+  # reused array
+  ivs = [] of Iv
+  lapper.find(*query, ivs)
+  ivs[0]?.should eq(expected)
+  lapper.seek(*query, ivs)
+  ivs[0]?.should eq(expected)
+end
+
 describe Lapper do
   describe Lapper::Lapper do
     it "should return nil for a query.stop that hits an interval.start" do
       lapper = setup_nonoverlapping
-      cursor = 0
-      lapper.find(15, 20)[0]?.should eq(nil)
-      lapper.seek(15, 20, pointerof(cursor))[0]?.should eq(nil)
+      query = {15, 20}
+      expected = [] of Iv
+      test_all(lapper, query, expected)
     end
 
     it "should return nil for a query.start that hits and interval.stop" do
       lapper = setup_nonoverlapping
-      cursor = 0
-      lapper.find(30, 35)[0]?.should eq(nil)
-      lapper.seek(30, 35, pointerof(cursor))[0]?.should eq(nil)
+      query = {30, 35}
+      expected = [] of Iv
+      test_all(lapper, query, expected)
     end
 
     it "should return an interval for a query overlaps the start of the interval" do
       lapper = setup_nonoverlapping
-      cursor = 0
+      query = {15, 25}
       expected = Iv.new(20, 30, 0)
-      lapper.find(15, 25)[0]?.should eq(expected)
-      lapper.seek(15, 25, pointerof(cursor))[0]?.should eq(expected)
+      test_all(lapper, query, expected)
     end
 
     it "should return an iterval if a query overlaps the stop of the interval" do
       lapper = setup_nonoverlapping
-      cursor = 0
+      query = {25, 35}
       expected = Iv.new(20, 30, 0)
-      lapper.find(25, 35)[0]?.should eq(expected)
-      lapper.seek(25, 35, pointerof(cursor))[0]?.should eq(expected)
+      test_all(lapper, query, expected)
     end
 
     it "should reuturn an interval if the query is enveloped by the interval" do
       lapper = setup_nonoverlapping
-      cursor = 0
       expected = Iv.new(20, 30, 0)
-      lapper.find(22, 27)[0]?.should eq expected
-      lapper.seek(22, 27, pointerof(cursor))[0]?.should eq expected
+      query = {22, 27}
+      test_all(lapper, query, expected)
     end
 
     it "should return an interval if the query envelops the interval" do
       lapper = setup_nonoverlapping
-      cursor = 0
       expected = Iv.new(20, 30, 0)
-      lapper.find(15, 35)[0]?.should eq expected
-      lapper.seek(15, 35, pointerof(cursor))[0]?.should eq expected
+      query = {20, 30}
+      test_all(lapper, query, expected)
     end
 
     it "should return mulitiple intervals if a query overlaps multiple intervals" do
       lapper = setup_overlapping
-      cursor = 0
       expected = [Iv.new(0, 15, 0), Iv.new(10, 25, 0)]
-      lapper.find(8, 20).should eq expected
-      lapper.seek(8, 20, pointerof(cursor)).should eq expected
+      query = {8, 20}
+      test_all(lapper, query, expected)
     end
 
     it "should find overlaps in large intervals" do
       data1 = [
-
         Iv.new(start: 0, stop: 8, val: 0),
         Iv.new(start: 1, stop: 10, val: 0),
         Iv.new(start: 2, stop: 5, val: 0),
@@ -109,14 +145,18 @@ describe Lapper do
         Iv.new(start: 150, stop: 200, val: 0),
       ]
       lapper = Lp.new(data1)
-      found = lapper.find(8, 11)
-      found.should eq [Iv.new(1, 10, 0), Iv.new(9, 11, 0), Iv.new(10, 13, 0)]
-      found = lapper.find(145, 151)
-      found.should eq [
+      query = {8, 11}
+      expected = [Iv.new(1, 10, 0), Iv.new(9, 11, 0), Iv.new(10, 13, 0)]
+      test_all(lapper, query, expected)
+
+      query = {145, 151}
+      expected = [
+
         Iv.new(start: 100, stop: 200, val: 0),
         Iv.new(start: 111, stop: 160, val: 0),
         Iv.new(start: 150, stop: 200, val: 0),
       ]
+      test_all(lapper, query, expected)
     end
 
     # Bug tests from real life bugs
@@ -125,7 +165,7 @@ describe Lapper do
       single = setup_single
       cursor = 0
       lapper.intervals.each do |interval|
-        single.intervals.each do |o_interval|
+        single.seek(interval.start, interval.stop).each do |o_interval|
           o_interval.to_s
         end
       end
@@ -133,9 +173,9 @@ describe Lapper do
 
     it "should return first match if lower_bound puts us before first match" do
       lapper = setup_badlapper
-      e1 = Iv.new(50, 55, 0)
-      found = lapper.find(50, 55)[0]?
-      found.should eq e1
+      expected = Iv.new(50, 55, 0)
+      query = {50, 55}
+      test_all(lapper, query, expected)
     end
 
     it "should handle long intervals that span many little intervals" do
@@ -149,7 +189,10 @@ describe Lapper do
         Iv.new(start: 28866309, stop: 33141404, val: 0),
       ]
       lapper = Lp.new(data)
-      lapper.find(28974798, 33141355).should eq [Iv.new(start: 28866309, stop: 33141404, val: 0)]
+
+      query = {28974798, 33141355}
+      expected = [Iv.new(start: 28866309, stop: 33141404, val: 0)]
+      test_all(lapper, query, expected)
     end
   end
 
