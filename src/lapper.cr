@@ -54,7 +54,7 @@
 # sum = 0
 # cursor = 0
 # (0..10).step(by: 3).each do |i|
-#   sum += lapper.seek(i, i + 2, pointerof(cursor)).map { |iv| Math.min(i + 2, iv.stop) - Math.max(i, iv.start) }.sum
+#   sum += lapper.seek(i, i + 2).map { |iv| Math.min(i + 2, iv.stop) - Math.max(i, iv.start) }.sum
 # end
 # ```
 module Lapper
@@ -116,13 +116,10 @@ module Lapper
 
     def initialize(@intervals : Array(Interval(T)), @cursor : Int32 = 0, @max_len : Int32 = 0)
       @intervals.sort!
+      @cursor = 0
       # Find the largest interval in the list
-      intervals.each do |interval|
-        i_len = interval.stop - interval.start
-        if i_len > @max_len
-          @max_len = i_len
-        end
-      end
+      max_iv = intervals.max_by { |iv| iv.stop - iv.start }
+      @max_len = max_iv.stop - max_iv.start
     end
 
     # Determine the first index that we should start checkinf for overlaps for via binary search
@@ -134,14 +131,15 @@ module Lapper
         other_half = size - half
         probe = low + half
         other_low = low + other_half
-        v = intervals[probe]
+        v = intervals.unsafe_fetch(probe)
         size = half
         low = v.start < start ? other_low : low
       end
       low
     end
 
-    # Find all intervals that overlap start .. stop
+    # Find all intervals that overlap start .. stop.
+    # Returns a new array for each query.
     # ```
     # data = (0..100).step(by: 5).map { |x| Interval(Int32).new(x, x + 2, 0) }.to_a
     # lapper = Lapper(Int32).new(data)
@@ -151,7 +149,7 @@ module Lapper
       result = [] of Interval(T)
       off = lower_bound(start - @max_len, @intervals)
       while off < @intervals.size
-        interval = @intervals[off]
+        interval = @intervals.unsafe_fetch(off)
         off += 1
         if interval.overlap(start, stop)
           result << interval
@@ -160,6 +158,51 @@ module Lapper
         end
       end
       result
+    end
+
+    # Find all intervals that overlap start .. stop.
+    # Reuses an passed in array.
+    # ```
+    # data = (0..100).step(by: 5).map { |x| Interval(Int32).new(x, x + 2, 0) }.to_a
+    # lapper = Lapper(Int32).new(data)
+    # lapper.find(5, 11, [] of Interval(Int32)).size == 2
+    # ```
+    def find(start : Int32, stop : Int32, ivs : Array(Interval(T)))
+      if ivs.size != 0
+        ivs.clear
+      end
+      off = lower_bound(start - @max_len, @intervals)
+      while off < @intervals.size
+        interval = @intervals.unsafe_fetch(off)
+        off += 1
+        if interval.overlap(start, stop)
+          ivs << interval
+        elsif interval.start >= stop
+          break
+        end
+      end
+    end
+
+    # Find all intervals that overlap start .. stop.
+    # Takes a block that accepts an interval.
+    # ```
+    # data = (0..100).step(by: 5).map { |x| Interval(Int32).new(x, x + 2, 0) }.to_a
+    # lapper = Lapper(Int32).new(data)
+    # total = 0
+    # lapper.find(5, 11) { |iv| total += 1 }
+    # total # => 2
+    # ```
+    def find(start : Int32, stop : Int32, &block)
+      off = lower_bound(start - @max_len, @intervals)
+      while off < @intervals.size
+        interval = @intervals.unsafe_fetch(off)
+        off += 1
+        if interval.overlap(start, stop)
+          yield interval
+        elsif interval.start >= stop
+          break
+        end
+      end
     end
 
     # Find all intervals that overlap start .. stop when queries are in sorted (by start) order.
@@ -172,20 +215,18 @@ module Lapper
     # lapper = Lapper(Int32).new(data)
     # cursor = 0
     # lapper.intervals.each do |i|
-    #   lapper.seek(i.start, i.stop, pointerof(cursor)).size == 1
+    #   lapper.seek(i.start, i.stop).size == 1
     # end
     # ```
-    def seek(start : Int32, stop : Int32, cursor : Int32*)
-      if cursor.value == 0 || (cursor.value < @intervals.size && @intervals[cursor.value].start > start)
-        cursor.value = lower_bound(start - @max_len, @intervals)
+    def seek(start : Int32, stop : Int32)
+      if @cursor == 0 || @cursor >= @intervals.size || @intervals[@cursor].start > start
+        @cursor = lower_bound(start - @max_len, @intervals)
       end
-      while cursor.value + 1 < @intervals.size && @intervals[cursor.value + 1].start < start - @max_len
-        cursor.value += 1
+      while (@cursor + 1) < @intervals.size && @intervals[@cursor + 1].start < (start - @max_len)
+        @cursor += 1
       end
       result = [] of Interval(T)
-      while cursor.value < @intervals.size
-        interval = @intervals[cursor.value]
-        cursor.value += 1
+      intervals[@cursor..].each do |interval|
         if interval.overlap(start, stop)
           result << interval
         elsif interval.start >= stop
@@ -193,6 +234,65 @@ module Lapper
         end
       end
       result
+    end
+
+    # Find all intervals that overlap start .. stop when queries are in sorted (by start) order.
+    # This variant takes a block that will be called for each found interval.
+    # ```
+    # data = (0..100).step(by: 5).map { |x| Interval(Int32).new(x, x + 2, 0) }.to_a
+    # lapper = Lapper(Int32).new(data)
+    # cursor = 0
+    # lapper.intervals.each do |i|
+    #   size = 0
+    #   lapper.seek(i.start, i.stop) { |iv| size += 1 }
+    #   size == 1
+    # end
+    # ```
+    def seek(start : Int32, stop : Int32, &block)
+      if @cursor == 0 || @cursor >= @intervals.size || @intervals[@cursor].start > start
+        @cursor = lower_bound(start - @max_len, @intervals)
+      end
+      while (@cursor + 1) < @intervals.size && @intervals[@cursor + 1].start < (start - @max_len)
+        @cursor += 1
+      end
+      intervals[@cursor..].each do |interval|
+        if interval.overlap(start, stop)
+          yield interval
+        elsif interval.start >= stop
+          break
+        end
+      end
+    end
+
+    # Find all intervals that overlap start .. stop when queries are in sorted (by start) order.
+    # This variant adds to an array ref that is passed in.
+    # ```
+    # data = (0..100).step(by: 5).map { |x| Interval(Int32).new(x, x + 2, 0) }.to_a
+    # lapper = Lapper(Int32).new(data)
+    # cursor = 0
+    # ivs = [] of Interval(Int32)
+    # lapper.intervals.each do |i|
+    #   lapper.seek(i.start, i.stop, ivs)
+    #   ivs.size == 1
+    # end
+    # ```
+    def seek(start : Int32, stop : Int32, ivs : Array(Interval(T)))
+      if ivs.size != 0
+        ivs.clear
+      end
+      if @cursor == 0 || @cursor >= @intervals.size || @intervals[@cursor].start > start
+        @cursor = lower_bound(start - @max_len, @intervals)
+      end
+      while (@cursor + 1) < @intervals.size && @intervals[@cursor + 1].start < (start - @max_len)
+        @cursor += 1
+      end
+      intervals[@cursor..].each do |interval|
+        if interval.overlap(start, stop)
+          ivs << interval
+        elsif interval.start >= stop
+          break
+        end
+      end
     end
   end
 end

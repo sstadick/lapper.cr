@@ -41,7 +41,7 @@ lapper.find(5, 11).size == 2
 sum = 0
 cursor = 0
 (0..10).step(by: 3).each do |i|
-  sum += lapper.seek(i, i + 2, pointerof(cursor)).map { |iv| Math.min(i + 2, iv.stop) - Math.max(i, iv.start) }.sum
+  sum += lapper.seek(i, i + 2).map { |iv| Math.min(i + 2, iv.stop) - Math.max(i, iv.start) }.sum
 end
 puts sum
 ```
@@ -56,7 +56,17 @@ TODO:
 - Benchmark against naive case like `nim-lapper`
 - Benchmark against klib
 
-The `bench\bench.cr` script is expecting the [this](https://github.com/lh3/biofast/releases/download/biofast-data-v1/biofast-data-v1.tar.gz) data to be in the top top level dir of the repo and untarred. 
+### Find variants
+
+Of the find variants, the find with block is the fastest, which makes sense since it is just a callback
+
+```
+      find 127.87  (  7.82ms) (± 9.71%)  12.0MB/op   1.66× slower
+find_yield 212.51  (  4.71ms) (± 9.80%)  1.53MB/op        fastest
+find_share 120.52  (  8.30ms) (±10.55%)  12.0MB/op   1.76× slower
+```
+
+The `bench\bench.cr` script is expecting the [this](https://github.com/lh3/biofast/releases/download/biofast-data-v1/biofast-data-v1.tar.gz) data to be in the top top level dir of the repo and untarred.
 
 ## Contributing
 
