@@ -104,6 +104,7 @@ describe Lapper do
       query = {25, 35}
       expected = Iv.new(20, 30, 0)
       test_all(lapper, query, expected)
+
     end
 
     it "should reuturn an interval if the query is enveloped by the interval" do
@@ -111,6 +112,7 @@ describe Lapper do
       expected = Iv.new(20, 30, 0)
       query = {22, 27}
       test_all(lapper, query, expected)
+
     end
 
     it "should return an interval if the query envelops the interval" do
@@ -118,6 +120,7 @@ describe Lapper do
       expected = Iv.new(20, 30, 0)
       query = {20, 30}
       test_all(lapper, query, expected)
+
     end
 
     it "should return mulitiple intervals if a query overlaps multiple intervals" do
@@ -125,6 +128,7 @@ describe Lapper do
       expected = [Iv.new(0, 15, 0), Iv.new(10, 25, 0)]
       query = {8, 20}
       test_all(lapper, query, expected)
+
     end
 
     it "should find overlaps in large intervals" do
@@ -151,6 +155,7 @@ describe Lapper do
 
       query = {145, 151}
       expected = [
+
         Iv.new(start: 100, stop: 200, val: 0),
         Iv.new(start: 111, stop: 160, val: 0),
         Iv.new(start: 150, stop: 200, val: 0),
@@ -175,6 +180,7 @@ describe Lapper do
       expected = Iv.new(50, 55, 0)
       query = {50, 55}
       test_all(lapper, query, expected)
+
     end
 
     it "should handle long intervals that span many little intervals" do
@@ -188,9 +194,11 @@ describe Lapper do
         Iv.new(start: 28866309, stop: 33141404, val: 0),
       ]
       lapper = Lp.new(data)
+
       query = {28974798, 33141355}
       expected = [Iv.new(start: 28866309, stop: 33141404, val: 0)]
       test_all(lapper, query, expected)
+
     end
   end
 

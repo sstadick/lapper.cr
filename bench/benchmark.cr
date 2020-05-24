@@ -49,6 +49,7 @@ Benchmark.ips do |x|
       end
     end
   }
+
   x.report("find_yield") {
     lines.each do |line|
       t = line.split
@@ -94,5 +95,6 @@ Benchmark.ips do |x|
       end
     end
   }
+
   # x.report("seek") { ... }
 end

@@ -56,6 +56,7 @@ TODO:
 - Benchmark against naive case like `nim-lapper`
 - Benchmark against klib
 
+
 ### Find variants
 
 Of the find variants, the find with block is the fastest, which makes sense since it is just a callback
@@ -67,6 +68,7 @@ find_share 120.52  (  8.30ms) (±10.55%)  12.0MB/op   1.76× slower
 ```
 
 The `bench\bench.cr` script is expecting the [this](https://github.com/lh3/biofast/releases/download/biofast-data-v1/biofast-data-v1.tar.gz) data to be in the top top level dir of the repo and untarred.
+
 
 ## Contributing
 
