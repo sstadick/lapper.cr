@@ -58,7 +58,7 @@
 # end
 # ```
 module Lapper
-  VERSION = "1.2.0"
+  VERSION = "1.3.0"
 
   # Represent an interval that can hold a *val* of any type
   struct Interval(T)
