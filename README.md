@@ -50,18 +50,34 @@ puts sum
 
 Has not yet been benchmarked for the Crystal implementation. For other languages this library outperforms [all implementations](https://github.com/sstadick/rust-lapper#benchmarks) when the intervals are not heavily nested. For another Crystal implementation of an interval lib, see [klib.cr](https://github.com/lh3/biofast/blob/master/lib/klib.cr), which is based on the [cgranges](https://github.com/lh3/cgranges) lib by the same author.
 
-TODO:
+### Bench against klib
 
-- Benchmark the `seek` and `find` methods against eachother
-- Benchmark against naive case like `nim-lapper`
-- Benchmark against klib
+Benchmarked against the klib.cr implementation and using the script found in `bench/biofast.cr` (uses the `find` with block method).
 
+```text
+Benchmark #1: ./bedcov_c1_cgr -c ../biofast-data-v1/ex-rna.bed ../biofast-data-v1/ex-anno.bed > bedcov_c1_cgr.out
+  Time (mean ± σ):      3.221 s ±  0.128 s    [User: 3.091 s, System: 0.122 s]
+  Range (min … max):    3.075 s …  3.423 s    10 runs
+
+Benchmark #2: ./bedcov_cr1_klib ../biofast-data-v1/ex-rna.bed ../biofast-data-v1/ex-anno.bed > bedcov_cr1_klib.out
+  Time (mean ± σ):      8.045 s ±  0.223 s    [User: 5.457 s, System: 2.688 s]
+  Range (min … max):    7.764 s …  8.440 s    10 runs
+
+Benchmark #3: bedcov_cr1_lapper/bin/bedcov_cr1_lapper ../biofast-data-v1/ex-rna.bed ../biofast-data-v1/ex-anno.bed > bedcov_cr1_lapper.out
+  Time (mean ± σ):      9.591 s ±  0.116 s    [User: 6.966 s, System: 2.751 s]
+  Range (min … max):    9.498 s …  9.835 s    10 runs
+
+Summary
+  './bedcov_c1_cgr -c ../biofast-data-v1/ex-rna.bed ../biofast-data-v1/ex-anno.bed > bedcov_c1_cgr.out' ran
+    2.50 ± 0.12 times faster than './bedcov_cr1_klib ../biofast-data-v1/ex-rna.bed ../biofast-data-v1/ex-anno.bed > bedcov_cr1_klib.out'
+    2.98 ± 0.12 times faster than 'bedcov_cr1_lapper/bin/bedcov_cr1_lapper ../biofast-data-v1/ex-rna.bed ../biofast-data-v1/ex-anno.bed > bedcov_cr1_lapper.out'
+```
 
 ### Find variants
 
 Of the find variants, the find with block is the fastest, which makes sense since it is just a callback
 
-```
+```text
       find 127.87  (  7.82ms) (± 9.71%)  12.0MB/op   1.66× slower
 find_yield 212.51  (  4.71ms) (± 9.80%)  1.53MB/op        fastest
 find_share 120.52  (  8.30ms) (±10.55%)  12.0MB/op   1.76× slower

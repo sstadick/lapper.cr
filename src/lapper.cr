@@ -149,7 +149,6 @@ module Lapper
       result = [] of Interval(T)
       off = lower_bound(start - @max_len, @intervals)
       while off < @intervals.size
-
         interval = @intervals.unsafe_fetch(off)
         off += 1
         if interval.overlap(start, stop)
