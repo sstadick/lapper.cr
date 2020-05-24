@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="generator" content="Crystal Docs 0.33.0">
+
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="js/doc.js"></script>
+
+<svg class="hidden">
+  <symbol id="octicon-link" viewBox="0 0 16 16">
+    <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+  </symbol>
+</svg>
+
+  <meta id="repository-name" content="github.com/sstadick/crystal-lapper">
+  <title>Lapper - github.com/sstadick/crystal-lapper</title>
+  <script type="text/javascript">
+    CrystalDoc.base_path = "";
+  </script>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="search-box">
+      <input type="search" class="search-input" placeholder="Search..." spellcheck="false" aria-label="Search">
+    </div>
+
+    <div class="repository-links">
+      <a href="index.html">README</a>
+    </div>
+  </div>
+
+  <div class="search-results" class="hidden">
+    <ul class="search-list"></ul>
+  </div>
+
+  <div class="types-list">
+    <ul>
+  
+  <li class="parent open current" data-id="github.com/sstadick/crystal-lapper/Lapper" data-name="lapper">
+      <a href="Lapper.html">Lapper</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/sstadick/crystal-lapper/Lapper/Interval" data-name="lapper::interval(t)">
+      <a href="Lapper/Interval.html">Interval</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/sstadick/crystal-lapper/Lapper/Lapper" data-name="lapper::lapper(t)">
+      <a href="Lapper/Lapper.html">Lapper</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+  </div>
+</div>
+
+
+<div class="main-content">
+<h1 class="type-name">
+
+  <span class="kind">module</span> Lapper
+
+</h1>
+
+
+
+
+
+  <h2>
+    <a id="overview" class="anchor" href="#overview">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Overview
+  </h2>
+
+  <p>This module provides a simple data-structure for fast interval searches.</p>
+
+<h2><a id="features" class="anchor" href="#features">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Features</h2>
+
+<ul><li>Extremely fast on most genomic datasets.</li><li>Extremly fast on in order queries.</li></ul>
+
+<p>Example query:</p>
+
+<pre><code class="language-text">      0  1  2  3  4  5  6  7  8  9  10 11
+(0,10]X  X  X  X  X  X  X  X  X  X
+(2,5]       X  X  X
+(3,8]          X  X  X  X  X
+(3,8]          X  X  X  X  X
+(3,8]          X  X  X  X  X
+(3,8]          X  X  X  X  X
+(5,9]                X  X  X  X
+(8,11]                        X  X  X
+
+Query: (8, 11]
+Answer: ((0,10], (5,9], (8,11])</code></pre>
+
+<p>Most interaction with this shard will be through the <code><a href="Lapper/Lapper.html">Lapper</a></code> class.
+The main methods are <code><a href="Lapper/Lapper.html#find(start:Int32,stop:Int32,ivs:Array(Lapper::Interval(T)))-instance-method">Lapper#find</a></code> and <code><a href="Lapper/Lapper.html#seek(start:Int32,stop:Int32,ivs:Array(Lapper::Interval(T)))-instance-method">Lapper#seek</a></code>.</p>
+
+<p>The overlap function for this assumes a zero based genomic coordinate system. So
+[start, stop) is not inclusive of the stop position for neither queries nor the
+<code>Intervals</code>.</p>
+
+<p>Lapper does not use an interval tree, instead, it operates on the assumtion that most intervals are
+of similar length; or, more exactly, that the longest interval in the set is not long compred to
+the average distance between intervals.</p>
+
+<p>For cases where this holds true (as it often does with genomic data), we can sort by start and
+use binary search on the starts, accounting for the length of the longest interval. The advantage
+of this approach is simplicity of implementation and speed. In realistic tests queries returning
+the overlapping intervals are 1000 times faster than brute force and queries that merely check
+for the overlaps are > 5000 times faster.</p>
+
+<h1><a id="examples" class="anchor" href="#examples">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>Examples</h1>
+
+<pre><code><span class="k">require</span> <span class="s">&quot;lapper&quot;</span>
+
+<span class="c"># Create some fake data</span>
+data <span class="o">=</span> (<span class="n">0</span>..<span class="n">100</span>).step(by: <span class="n">20</span>).map { <span class="o">|</span>x<span class="o">|</span> <span class="t">Lapper</span><span class="t">::</span><span class="t">Interval</span>(<span class="t">Int32</span>).<span class="k">new</span>(x, x <span class="o">+</span> <span class="n">10</span>, <span class="n">0</span>) }.to_a
+
+<span class="c"># Create the lapper</span>
+lapper <span class="o">=</span> <span class="t">Lapper</span><span class="t">::</span><span class="t">Lapper</span>(<span class="t">Int32</span>).<span class="k">new</span>(data)
+
+<span class="c"># Demo `find`</span>
+lapper <span class="o">=</span> <span class="t">Lapper</span><span class="t">::</span><span class="t">Lapper</span>(<span class="t">Int32</span>).<span class="k">new</span>(data)
+lapper.find(<span class="n">5</span>, <span class="n">11</span>).size <span class="o">==</span> <span class="n">2</span>
+
+<span class="c"># Demo `seek` - calculate overlap between queries and the found intervals</span>
+sum <span class="o">=</span> <span class="n">0</span>
+cursor <span class="o">=</span> <span class="n">0</span>
+(<span class="n">0</span>..<span class="n">10</span>).step(by: <span class="n">3</span>).each <span class="k">do</span> <span class="o">|</span>i<span class="o">|</span>
+  sum += lapper.seek(i, i <span class="o">+</span> <span class="n">2</span>).map { <span class="o">|</span>iv<span class="o">|</span> <span class="t">Math</span>.min(i <span class="o">+</span> <span class="n">2</span>, iv.stop) <span class="o">-</span> <span class="t">Math</span>.max(i, iv.start) }.sum
+<span class="k">end</span></code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2>
+    <a id="defined-in" class="anchor" href="#defined-in">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+    Defined in:
+  </h2>
+  
+    
+      <a href="https://github.com/sstadick/crystal-lapper/blob/edeb2b7e55332d0cb6a9e15f87c9584cd588c65e/src/lapper.cr#L60" target="_blank">
+        lapper.cr
+      </a>
+    
+    <br/>
+  
+
+
+
+  
+    <h2>
+      <a id="constant-summary" class="anchor" href="#constant-summary">
+  <svg class="octicon-link" aria-hidden="true">
+    <use href="#octicon-link"/>
+  </svg>
+</a>
+      Constant Summary
+    </h2>
+  
+  <dl>
+    
+      <dt class="entry-const" id="VERSION">
+        <strong>VERSION</strong> = <code><span class="s">&quot;1.3.0&quot;</span></code>
+      </dt>
+      
+    
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+<div class="methods-inherited">
+  
+</div>
+
+
+
+
+
+
+
+
+
+</div>
+
+</body>
+</html>
