@@ -73,15 +73,18 @@ Summary
     2.98 ± 0.12 times faster than 'bedcov_cr1_lapper/bin/bedcov_cr1_lapper ../biofast-data-v1/ex-rna.bed ../biofast-data-v1/ex-anno.bed > bedcov_cr1_lapper.out'
 ```
 
-### Find variants
-
-Of the find variants, the find with block is the fastest, which makes sense since it is just a callback
+### `find` and `seek` variants on query data sorted by start
 
 ```text
-      find 127.87  (  7.82ms) (± 9.71%)  12.0MB/op   1.66× slower
-find_yield 212.51  (  4.71ms) (± 9.80%)  1.53MB/op        fastest
-find_share 120.52  (  8.30ms) (±10.55%)  12.0MB/op   1.76× slower
+      find  13.86  ( 72.17ms) (± 8.03%)  81.5MB/op   1.63× slower
+      seek  15.31  ( 65.33ms) (± 4.51%)  81.5MB/op   1.48× slower
+find_yield  21.95  ( 45.57ms) (± 5.29%)  1.53MB/op   1.03× slower
+seek_yield  22.61  ( 44.23ms) (± 1.52%)  1.53MB/op        fastest
+find_share  15.36  ( 65.08ms) (± 3.68%)  81.5MB/op   1.47× slower
+seek_share  15.52  ( 64.43ms) (± 4.30%)  81.5MB/op   1.46× slower
 ```
+
+Note that for more queries than represented here, `seek` should get faster.
 
 The `bench\bench.cr` script is expecting the [this](https://github.com/lh3/biofast/releases/download/biofast-data-v1/biofast-data-v1.tar.gz) data to be in the top top level dir of the repo and untarred.
 
