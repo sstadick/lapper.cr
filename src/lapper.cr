@@ -226,7 +226,10 @@ module Lapper
         @cursor += 1
       end
       result = [] of Interval(T)
-      intervals[@cursor..].each do |interval|
+      c = @cursor
+      while c < intervals.size
+        interval = @intervals.unsafe_fetch(c)
+        c += 1
         if interval.overlap(start, stop)
           result << interval
         elsif interval.start >= stop
@@ -255,7 +258,10 @@ module Lapper
       while (@cursor + 1) < @intervals.size && @intervals[@cursor + 1].start < (start - @max_len)
         @cursor += 1
       end
-      intervals[@cursor..].each do |interval|
+      c = @cursor
+      while c < @intervals.size
+        interval = intervals.unsafe_fetch(c)
+        c += 1
         if interval.overlap(start, stop)
           yield interval
         elsif interval.start >= stop
@@ -286,7 +292,10 @@ module Lapper
       while (@cursor + 1) < @intervals.size && @intervals[@cursor + 1].start < (start - @max_len)
         @cursor += 1
       end
-      intervals[@cursor..].each do |interval|
+      c = @cursor
+      while c < intervals.size
+        interval = @intervals.unsafe_fetch(c)
+        c += 1
         if interval.overlap(start, stop)
           ivs << interval
         elsif interval.start >= stop
